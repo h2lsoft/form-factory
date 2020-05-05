@@ -1,0 +1,33 @@
+{
+  "name": "h2lsoft/form-factory",
+  "description": "Form factory make bootstrap form easily",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "anti-xss",
+    "bootstrap",
+    "form",
+    "form builder",
+    "security",
+    "xss",
+    "php"
+  ],
+
+  "homepage": "https://github.com/h2lsoft/FormFactory",
+  "authors": [
+    {
+      "name": "H2lSoft",
+      "homepage": "https://www.h2lsoft.com"
+    }],
+
+    "require": {
+      "php": ">=7.1",
+      "voku/anti-xss": "^4",
+      "h2lsoft/validator": "^1"
+    },
+    "autoload": {
+      "psr-4": {
+        "h2lsoft\\FormFactory\\": "src/"
+      }
+    }
+}
