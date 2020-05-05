@@ -21,6 +21,7 @@ class Form
 	
 	private $form_values = [];
 	private $anti_xss;
+	private $csrf_token;
 	
 	public $validator;
 	private $auto_validator = true;
@@ -37,7 +38,17 @@ class Form
 		$this->locale = $locale;
 		$this->validator = new Validator($locale, strtoupper($method));
 		
+		// csrf_token generate token
+		$this->generateCsrfToken();
+		
 		return $this;
+	}
+	
+	public function generateCsrfToken()
+	{
+		if(!session_id())session_start();
+		$sessionID = session_id();
+		$this->csrf_token = sha1($this->form['name'].$sessionID);
 	}
 	
 	
@@ -631,6 +642,17 @@ BTN;
 	// RENDER **********************************************************************************************************
 	public function isValid()
 	{
+		// CSRF
+		if($this->isSubmitted() && $this->validator->inputGet('csrf_token') !== $this->csrf_token)
+		{
+			$message = "Your token is not valid, please submit again your form";
+			if($this->locale == 'fr')
+				$message = "Votre jeton n'est pas valide, veuillez renvoyer votre formulaire";
+			
+			$this->validator->addError($message);
+		}
+		
+		
 		// add compilation rules
 		if($this->auto_validator)
 		{
@@ -640,8 +662,41 @@ BTN;
 				if(in_array($type, ['text', 'number', 'tel', 'email', 'password','file', 'url', 'textarea', 'select', 'select-multiple', 'checkbox', 'radio', 'switch', 'money', 'date', 'time', 'datetime-local', 'color']))
 				{
 					$input = $this->validator->input($name, $this->fields[$name]['label']);
-					if($this->fields[$name]['required'] && $type != 'switch')
+					if($this->fields[$name]['required'] && $type != 'switch' && $type != 'file')
 						$input->required();
+					
+					if($type == 'file')
+					{
+						$input->fileRequired();
+						
+						if(isset($this->fields[$name]['attributes']['accept']))
+						{
+							$accepted = explode(',', $this->fields[$name]['attributes']['accept']);
+							
+							$extensions = [];
+							$mimes = [];
+							
+							foreach($accepted as $a)
+							{
+								$a = strtolower($a);
+								$a = trim($a);
+								
+								if(strpos($a, '/') !== false)
+								{
+									$mimes[] = $a;
+								}
+								else
+								{
+									$ext = str_replace(['.', '*'], '', $a);
+									$extensions[] = $ext;
+								}
+							}
+							
+							if(count($mimes))$input->fileMime($mimes);
+							if(count($extensions))$input->fileExtension($extensions);
+						}
+					}
+					
 					
 					// mask
 					if(isset($this->fields[$name]['attributes']['data-mask']) && !empty($this->fields[$name]['attributes']['data-mask']))
@@ -1127,7 +1182,6 @@ BTN;
 				if(!$row_started && $f['row'])
 					$render .= "	</div>\n";
 			}
-			
 		}
 		
 		// hiddens
@@ -1145,6 +1199,9 @@ BTN;
 				$render .= ">\n";
 			}
 		}
+		
+		// @todo> CSRF
+		$render .= "<input type=\"hidden\" name=\"csrf_token\" id=\"csrf_token\"  value=\"{$this->csrf_token}\">\n";
 		
 		// </form>
 		$render .= "</form>\n";

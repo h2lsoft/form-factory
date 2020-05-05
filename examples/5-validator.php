@@ -15,6 +15,7 @@ $form->addDateTime('DateTime', 'Date time', true);
 $form->addNumber('Age', '', true, ['min'=>5, 'max'=>20, 'step'=>1, 'class'=>'text-center'])->setInputSize(2);
 $form->addSelect('Fruit', '', ['Apple', 'Banana', 'Pear'], true, true);
 $form->addRadio('Rating', '', ['Bad', 'Medium', 'Good'], true);
+$form->addFile('CV', '', true, ['accept' => '.doc,.docx,.pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf']);
 $form->addTextArea('Comments', '', false, '', ['minlength'=>5, 'maxlength'=>255]);
 $form->addColorPicker('Color', '', false);
 $form->addUrl("Website", '', false);
